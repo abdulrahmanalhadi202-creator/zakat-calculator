@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>حاسبة زكاة الذهب - السنوات الفائتة</title>
+<style>
+  :root{
+    --bg:#0b1220; --surface-1:#141d2e; --surface-2:#101827;
+    --text:#e8ecf3; --text-secondary:#9aa7bd; --text-muted:#7b8698;
+    --border:#232d40; --border-strong:#2e3a52;
+    --accent:#2e8b57; --bg-success:#0f2a1e; --text-success:#4ade80;
+    --bg-warning:#3a2a0e; --text-warning:#facc15;
+    --radius:10px;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:'Segoe UI', Tahoma, Arial, sans-serif;
+    padding:24px 12px; line-height:1.6;
+  }
+  .wrap{max-width:900px;margin:0 auto}
+  h1{font-size:20px;font-weight:600;text-align:center;margin:0 0 4px}
+  .sub{color:var(--text-secondary);font-size:13px;text-align:center;margin:0 0 24px}
+  .box{border:1px solid var(--border);border-radius:14px;padding:1.25rem 1.25rem;background:var(--surface-2);margin-bottom:1.5rem}
+  .box h2{font-size:16px;font-weight:600;margin:0 0 1rem;display:flex;align-items:center;gap:8px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:12px}
+  label{font-size:13px;color:var(--text-secondary);display:block;margin-bottom:6px}
+  select,input{
+    width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--border-strong);
+    background:var(--surface-1); color:var(--text); font-size:14px;
+  }
+  select:focus,input:focus{outline:2px solid var(--accent);outline-offset:1px}
+  .chk{font-size:13px;color:var(--text-secondary);display:flex;align-items:center;gap:8px;margin-bottom:14px}
+  button{
+    width:100%; padding:12px; border-radius:8px; border:none;
+    background:var(--accent); color:#fff; font-size:15px; font-weight:600; cursor:pointer;
+  }
+  button:hover{background:#256e45}
+  .nisab{display:none;margin-top:12px;background:var(--bg-warning);color:var(--text-warning);border-radius:var(--radius);padding:10px 14px;font-size:13px}
+  .out{display:none;margin-top:1rem}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:1rem}
+  .card{background:var(--surface-1);border-radius:var(--radius);padding:1rem}
+  .card .lbl{font-size:13px;color:var(--text-secondary);display:block;margin-bottom:6px}
+  .card .num{font-size:22px;font-weight:600}
+  .success{background:var(--bg-success)}
+  .success .num{color:var(--text-success)}
+  table{width:100%;font-size:13px;border-collapse:collapse;table-layout:fixed}
+  th{color:var(--text-secondary);font-weight:600;text-align:right;padding:8px 4px;border-bottom:1px solid var(--border-strong)}
+  td{padding:6px 4px;border-bottom:1px solid var(--border);text-align:right}
+  tfoot td{font-weight:600;font-size:14px;border-bottom:none;border-top:2px solid var(--border-strong);padding:10px 4px}
+  .note{font-size:12px;color:var(--text-muted);margin:10px 0 0}
+  .disclaimer{font-size:12px;color:var(--text-muted);border-top:1px solid var(--border);padding-top:14px;margin-top:8px}
+  .disclaimer b{color:var(--text-secondary)}
+  footer{text-align:center;font-size:11px;color:var(--text-muted);margin-top:20px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>حاسبة زكاة الذهب — السنوات الفائتة</h1>
+  <p class="sub">حساب على أعلى سعر سنوي (تحوّط) — الوزن يُحسب كما هو بدون تحويل عيار</p>
+
+  <div class="box">
+    <h2>📊 حساب زكاة السنوات الفائتة</h2>
+    <div class="grid">
+      <div>
+        <label for="zkKarat">العيار</label>
+        <select id="zkKarat">
+          <option value="21">عيار 21</option>
+          <option value="18">عيار 18</option>
+          <option value="24">عيار 24</option>
+        </select>
+      </div>
+      <div>
+        <label for="zkGrams">الوزن (جرام)</label>
+        <input type="number" id="zkGrams" min="0" step="1" value="100">
+      </div>
+      <div>
+        <label for="zkLast">آخر سنة أُخرجت فيها الزكاة</label>
+        <select id="zkLast"></select>
+      </div>
+    </div>
+    <label class="chk"><input type="checkbox" id="zkHijri" checked> إضافة تعديل السنة الهجرية +3.09% (أحوط)</label>
+    <button id="zkBtn">احسب الزكاة</button>
+    <div id="zkNisab" class="nisab"></div>
+    <div id="zkOut" class="out">
+      <div class="cards">
+        <div class="card"><span class="lbl">عدد السنوات</span><span class="num" id="zkYears">—</span></div>
+        <div class="card"><span class="lbl">الوزن المحسوب</span><span class="num" id="zkW">—</span></div>
+        <div class="card success"><span class="lbl">إجمالي الزكاة النهائي (ريال)</span><span class="num" id="zkTotal">—</span></div>
+      </div>
+      <table>
+        <thead><tr><th style="width:18%">السنة</th><th>أعلى سعر (ريال/جرام)</th><th>قيمة ذهبك (ريال)</th><th>زكاة السنة (ريال)</th></tr></thead>
+        <tbody id="zkRows"></tbody>
+        <tfoot>
+          <tr><td colspan="3">المجموع (<span id="zkFN">—</span> سنة)</td><td id="zkFSum" style="color:var(--text-success)">—</td></tr>
+          <tr id="zkFHijRow"><td colspan="3">المجموع بعد التعديل الهجري +3.09%</td><td id="zkFHij" style="color:var(--text-success)">—</td></tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+  <div class="box">
+    <h2>🔍 استعلام سعر وزكاة سنة واحدة</h2>
+    <div class="grid">
+      <div>
+        <label for="qKarat">العيار</label>
+        <select id="qKarat">
+          <option value="21">عيار 21</option>
+          <option value="18">عيار 18</option>
+          <option value="24">عيار 24</option>
+        </select>
+      </div>
+      <div>
+        <label for="qYear">السنة</label>
+        <select id="qYear"></select>
+      </div>
+      <div>
+        <label for="qGrams">الوزن (جرام)</label>
+        <input type="number" id="qGrams" min="0" step="1" value="100">
+      </div>
+    </div>
+    <div class="cards">
+      <div class="card"><span class="lbl">أعلى سعر بالسنة (ريال/جرام)</span><span class="num" id="qGram">—</span></div>
+      <div class="card"><span class="lbl">قيمة ذهبك (ريال)</span><span class="num" id="qVal">—</span></div>
+      <div class="card success"><span class="lbl">زكاة هذه السنة (ريال)</span><span class="num" id="qZak">—</span></div>
+    </div>
+    <p id="qNote" class="note"></p>
+  </div>
+
+  <div class="box">
+    <h2>⚠️ ملاحظات مهمة (اقرأها قبل الاعتماد على النتيجة)</h2>
+    <div class="disclaimer">
+      <p><b>الضوابط الشرعية:</b> النصاب 85 جم ذهب خالص، المقدار 2.5% من قيمة الذهب سنوياً، المصنعية لا تدخل في الحساب. زكاة الحلي المستعمل محل خلاف بين الفقهاء — هذه الحاسبة لا تفحص النصاب وتحسب على الوزن المدخل كما هو دون أي تحويل بين الأعيرة، بناءً على طلب صريح من المستخدم.</p>
+      <p><b>مصادر الأسعار:</b> أسعار 1971–2024 من جدول القمم السنوية القياسي المنشور (London fix highs). سعر 2025 <b>تقديري (5000$) وغير موثّق بدقة</b> — يُنصح بالتحقق منه. سعر 2026 مبني على قمة موثقة في يناير 2026 (5590$) وقد يتغيّر قبل نهاية السنة.</p>
+      <p><b>سعر الصرف:</b> 3.75 ريال/دولار ثابت لكل السنوات، رغم أنه قبل 1986 كان فعلياً بين 3.33–3.65 — هذا يرفع الناتج قليلاً في السنوات المبكرة (في اتجاه التحوّط).</p>
+      <p><b>الأرقام تقديرية بغلبة الظن</b> وليست حساباً دقيقاً ليوم الحول الفعلي، وهذا مقبول شرعاً عند تعذر التحديد بعد سنوات طويلة. يُنصح بمراجعة مفتٍ أو دار الإفتاء (السعودية: 8003010101) قبل إخراج مبالغ كبيرة، خصوصاً في مسألة وجوب زكاة الحلي المستعمل من الأساس.</p>
+    </div>
+  </div>
+
+  <footer>حاسبة مبنية بمساعدة Claude (Anthropic) — للاستخدام الإرشادي وليست فتوى شرعية</footer>
+</div>
+
+<script>
+const H={1971:43.98,1972:70.00,1973:127.00,1974:197.50,1975:186.25,1976:140.35,1977:168.15,1978:243.65,1979:524.00,1980:850.00,1981:599.25,1982:481.00,1983:509.25,1984:406.85,1985:340.90,1986:442.75,1987:502.75,1988:485.30,1989:415.80,1990:423.75,1991:403.70,1992:359.60,1993:406.70,1994:397.50,1995:396.95,1996:416.25,1997:367.80,1998:313.15,1999:326.25,2000:316.60,2001:293.25,2002:349.30,2003:416.25,2004:454.20,2005:537.50,2006:725.00,2007:841.10,2008:1011.25,2009:1212.50,2010:1421.00,2011:1895.00,2012:1791.75,2013:1693.75,2014:1385.00,2015:1295.75,2016:1366.25,2017:1346.25,2018:1354.95,2019:1546.10,2020:2067.15,2021:1943.20,2022:2039.05,2023:2078.40,2024:2783.95,2025:5000,2026:5590};
+const EST={2025:"تقديري — يحتاج توثيق",2026:"أعلى سعر حتى الآن (يناير 2026)"};
+const FX=3.75,OZ=31.1035,fmt=n=>new Intl.NumberFormat('en-US',{maximumFractionDigits:2}).format(n);
+const pg=(y,k)=>H[y]/OZ*FX*(k/24);
+
+const last=document.getElementById('zkLast'),qy=document.getElementById('qYear');
+last.innerHTML='<option value="1970">لم تُخرَج الزكاة أبداً (من 1971)</option>';
+for(let y=2025;y>=1971;y--)last.innerHTML+=`<option value="${y}">${y}</option>`;
+for(let y=2026;y>=1971;y--)qy.innerHTML+=`<option value="${y}">${y}</option>`;
+
+document.getElementById('zkBtn').onclick=()=>{
+  const k=+document.getElementById('zkKarat').value,
+        g=+document.getElementById('zkGrams').value,
+        from=+last.value+1,
+        hij=document.getElementById('zkHijri').checked;
+  const nis=document.getElementById('zkNisab'),out=document.getElementById('zkOut');
+  if(!g){out.style.display='none';nis.style.display='block';nis.textContent='أدخل الوزن بالجرام أولاً';return}
+  nis.style.display='none';
+  let total=0,rows='';
+  for(let y=from;y<=2026;y++){
+    const p=pg(y,k),v=g*p,z=v*0.025;total+=z;
+    rows+=`<tr><td>${y}${EST[y]?' <span style="color:var(--text-warning);font-size:11px">'+EST[y]+'</span>':''}</td><td>${fmt(p)}</td><td>${fmt(Math.round(v))}</td><td>${fmt(z)}</td></tr>`;
+  }
+  const finalTotal=hij?total*1.0309:total;
+  document.getElementById('zkYears').textContent=(2026-from+1);
+  document.getElementById('zkW').textContent=fmt(g)+' جم عيار '+k;
+  document.getElementById('zkTotal').textContent=fmt(Math.round(finalTotal));
+  document.getElementById('zkRows').innerHTML=rows;
+  document.getElementById('zkFN').textContent=(2026-from+1);
+  document.getElementById('zkFSum').textContent=fmt(Math.round(total));
+  document.getElementById('zkFHijRow').style.display=hij?'':'none';
+  document.getElementById('zkFHij').textContent=fmt(Math.round(total*1.0309));
+  out.style.display='block';
+};
+
+function q(){
+  const k=+document.getElementById('qKarat').value,
+        y=+qy.value,
+        g=+document.getElementById('qGrams').value||0,
+        p=pg(y,k);
+  document.getElementById('qGram').textContent=fmt(p);
+  document.getElementById('qVal').textContent=fmt(Math.round(g*p));
+  document.getElementById('qZak').textContent=fmt(g*p*0.025);
+  document.getElementById('qNote').textContent=EST[y]?'تنبيه: سعر '+y+' '+EST[y]:'';
+}
+document.getElementById('qKarat').onchange=q;
+qy.onchange=q;
+document.getElementById('qGrams').oninput=q;
+q();
+</script>
+</body>
+</html>
